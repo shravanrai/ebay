@@ -5,21 +5,18 @@ import java.util.Iterator;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class CellPhonesPage {
-	private WebDriver driver;
-	private WebDriverWait wait;
-	private Actions actions = new Actions(driver);
+public class CellPhonesPage extends BasePage {
+
+	private PF pf;
 
 	public CellPhonesPage(WebDriver driver) {
-		this.driver = driver;
-		this.wait = new WebDriverWait(driver, 3000l);
+		super(driver);
 		PageFactory.initElements(driver, this);
+		pf=new PF(driver);
 	}
 
 	@FindBy(xpath = "//a[contains(text(),\"Cell Phones & Smartphones\")]")
@@ -44,7 +41,6 @@ public class CellPhonesPage {
 	WebElement getFirstSearchedITem;
 
 	public void selectCellPhonesSmartphones() {
-
 		cellPhonesSmartphones.click();
 	}
 
@@ -94,7 +90,7 @@ public class CellPhonesPage {
 	}
 
 	// select first result and verify the screensize, location, price.
-	public void selectFirstResultNameFromFilteredItems() {
+	public ITemDetailsPage selectFirstResultNameFromFilteredItems() {
 		actions.moveToElement(firstResult);
 
 		try {
@@ -114,6 +110,8 @@ public class CellPhonesPage {
 				driver.switchTo().window(currentWH);
 			}
 		}
+
+		return pf.createITemDetailsPage();
 	}
 
 	public String getFirstSearchedITemName() {

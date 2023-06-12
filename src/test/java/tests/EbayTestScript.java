@@ -13,19 +13,34 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import pages.CellPhonesPage;
 import pages.EbayHomePage;
 import pages.ITemDetailsPage;
+import pages.PF;
 
 public class EbayTestScript {
 	private static final Logger logger = LoggerFactory.getLogger(EbayTestScript.class);
 	SoftAssert sa;
 	WebDriver driver;
-	EbayHomePage ebayHomePage;
-	CellPhonesPage cellPhonesPage;
-	ITemDetailsPage iTemDetailsPage;
+	private PF pf;
+	
+	@BeforeMethod
+	public void setup() {
+		sa = new SoftAssert();
+		WebDriverManager.edgedriver().setup();
 
+		// Create a new instance of EdgeDriver
+		driver = new EdgeDriver();
+		driver.manage().window().maximize();
+		pf = new PF(driver);
+
+	}
+
+	
 	@Test(description = "Access a Product via category after applying multiple filters")
 	public void scenarios1() {
+		EbayHomePage ebayHomePage = pf.createHomePage();
 		ebayHomePage.navigateToHomePage();
 		ebayHomePage.selectCategory("Cell phones & accessories");
+
+		CellPhonesPage cellPhonesPage = pf.createCellPhonesPage();
 		cellPhonesPage.selectCellPhonesSmartphones();
 		cellPhonesPage.clickSeeAll();
 
@@ -35,7 +50,7 @@ public class EbayTestScript {
 		String location = "Worldwide";
 
 		cellPhonesPage.applyFilters(screenSize, minPrice, maxPrice, location);
-		cellPhonesPage.selectFirstResultNameFromFilteredItems();
+		ITemDetailsPage iTemDetailsPage = cellPhonesPage.selectFirstResultNameFromFilteredItems();
 
 		// screen validations
 		sa.assertTrue(iTemDetailsPage.getScreenSize() >= 6, "screen size is not as expected");
@@ -44,16 +59,17 @@ public class EbayTestScript {
 		Double actPrice = iTemDetailsPage.getPrice();
 		sa.assertTrue(actPrice >= Double.parseDouble(minPrice) || actPrice < Double.parseDouble(maxPrice),
 				"price is not as expected");
-		//location validations -- could not find the way to verify locations.
-		
+		// location validations -- could not find the way to verify locations.
 
 	}
 
 	@Test(description = "Access a Product via Search ")
 	public void scenarios2() {
+		EbayHomePage ebayHomePage = pf.createHomePage();
 		ebayHomePage.navigateToHomePage();
 		String searchItem = "MacBook";
 		ebayHomePage.searchItem(searchItem);
+		CellPhonesPage cellPhonesPage = pf.createCellPhonesPage();
 		logger.info("Search Results: " + cellPhonesPage.getSearchResultsCount());
 
 		// Verify the first result name matches the search string String
@@ -61,23 +77,9 @@ public class EbayTestScript {
 				"the first result name does not matche the search string String");
 	}
 
-	@BeforeMethod
-	public void BeforeMethod() {
-		sa = new SoftAssert();
-		WebDriverManager.edgedriver().setup();
-
-		// Create a new instance of EdgeDriver
-		driver = new EdgeDriver();
-		driver.manage().window().maximize();
-
-		// Create instances of the page classes
-		ebayHomePage = new EbayHomePage(driver);
-		cellPhonesPage = new CellPhonesPage(driver);
-		iTemDetailsPage = new ITemDetailsPage(driver);
-	}
 
 	@AfterMethod
-	public void AfterMethod() {
+	public void tearDown() {
 		driver.quit();
 		sa.assertAll();
 	}
